@@ -3,7 +3,7 @@ from homebot.modules.ci.projects.aosp.projects.projectfluid import common
 
 project = AOSPProject(
 	name = common.name,
-	version = "11.0",
+	version = "11",
 	android_version = "11",
 	category = common.category,
 	lunch_prefix = common.lunch_prefix,

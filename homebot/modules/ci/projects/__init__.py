@@ -17,13 +17,14 @@ from telegram.update import Update
 
 def ci_build(update: Update, context: CallbackContext):
 	# Parse arguments
-	parser = CIParser(prog="/ci aosp")
+	parser = CIParser(prog="/ci")
 	parser.set_output(update.message.reply_text)
 	parser.add_argument('project', help='AOSP project')
 	parser.add_argument('device', help='device codename')
 	parser.add_argument('-ic', '--installclean', help='make installclean before building', action='store_true')
 	parser.add_argument('-c', '--clean', help='make clean before building', action='store_true')
-	parser.set_defaults(clean=False, installclean=False)
+        parser.add_argument('-g', '--gapped' help='make gapped build', action='store_true')
+	parser.set_defaults(clean=False, installclean=False, gapped=False)
 
 	try:
 		args_passed = update.message.text.split(' ', 2)[2].split()
@@ -48,12 +49,13 @@ def ci_build(update: Update, context: CallbackContext):
 
 	message_id = update_ci_post(context, None, project, args.device, "Building")
 
-	command = [bot_path / "modules" / "ci" / "projects" / "aosp" / "tools" / "building.sh",
+	command = [bot_path / "modules" / "ci" / "projects" / "tools" / "building.sh",
 			   "--sources", project_dir,
 			   "--lunch_prefix", project.lunch_prefix,
 			   "--lunch_suffix", project.lunch_suffix,
 			   "--build_target", project.build_target,
 			   "--clean", clean_type,
+			   "--gapped", args.gapped,
 			   "--device", args.device]
 
 	last_edit = datetime.now()

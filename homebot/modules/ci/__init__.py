@@ -14,7 +14,7 @@ from telegram.update import Update
 class Module(ModuleBase):
 	name = "ci"
 	description = "A module that let you trigger actions with a single Telegram message"
-	version = "1.0.0"
+	version = "1.1.0"
 
 	def ci(update: Update, context: CallbackContext):
 		if not user_is_admin(update.message.from_user.id):
@@ -30,7 +30,7 @@ class Module(ModuleBase):
 		parser = CIParser(prog="/ci")
 		parser.set_output(update.message.reply_text)
 		parser.add_argument('project', help='CI project',
-							nargs='?', default=None,)
+							nargs='?', default='ProjectFluid-11.0',)
 		parser.add_argument('-s', '--status',
 							action='store_true', help='show queue status')
 

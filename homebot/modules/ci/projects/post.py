@@ -8,7 +8,7 @@ chat_id = get_config("CI_CHANNEL_ID")
 def update_ci_post(context: CallbackContext, message_id: int,
 				   project: AOSPProject, device: str,
 				   status: str, artifacts=None):
-	text =  f"🛠 CI | {project.name} {project.version} ({project.android_version})\n"
+	text =  f"💦 CI | Fluid ({project.android_version})\n"
 	text += f"Device: {device}\n"
 	text += f"Lunch flavor: {project.lunch_prefix}_{device}-{project.lunch_suffix}\n"
 	text += "\n"
