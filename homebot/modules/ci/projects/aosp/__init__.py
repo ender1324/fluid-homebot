@@ -12,6 +12,7 @@ from importlib import import_module
 from pathlib import Path
 import re
 import subprocess
+import sys
 from telegram.ext import CallbackContext
 from telegram.update import Update
 
@@ -23,7 +24,8 @@ def ci_build(update: Update, context: CallbackContext):
 	parser.add_argument('device', help='device codename')
 	parser.add_argument('-ic', '--installclean', help='make installclean before building', action='store_true')
 	parser.add_argument('-c', '--clean', help='make clean before building', action='store_true')
-	parser.set_defaults(clean=False, installclean=False)
+	parser.add_argument('-g', '--gapped', help='make gapped build', action='store_true')
+	parser.set_defaults(clean=False, installclean=False, gapped=False)
 
 	try:
 		args_passed = update.message.text.split(' ', 2)[2].split()
@@ -46,7 +48,7 @@ def ci_build(update: Update, context: CallbackContext):
 	else:
 		clean_type = "none"
 
-	message_id = update_ci_post(context, None, project, args.device, "Building")
+	message_id = update_ci_post(context, None, project, args.device, "Building", gapped=args.gapped)
 
 	command = [bot_path / "modules" / "ci" / "projects" / "aosp" / "tools" / "building.sh",
 			   "--sources", project_dir,
@@ -54,6 +56,7 @@ def ci_build(update: Update, context: CallbackContext):
 			   "--lunch_suffix", project.lunch_suffix,
 			   "--build_target", project.build_target,
 			   "--clean", clean_type,
+			   "--gapped", str(args.gapped),
 			   "--device", args.device]
 
 	last_edit = datetime.now()
@@ -79,7 +82,8 @@ def ci_build(update: Update, context: CallbackContext):
 
 		percentage, targets = re.split(" +", result.group(1))
 		update_ci_post(context, message_id, project, args.device,
-					   f"Building: {percentage} ({targets})")
+					   f"Building: {percentage} ({targets})",
+					   gapped=args.gapped)
 
 		last_edit = now
 
@@ -88,7 +92,7 @@ def ci_build(update: Update, context: CallbackContext):
 	# Process return code
 	build_result = ERROR_CODES.get(returncode, "Build failed: Unknown error")
 
-	update_ci_post(context, message_id, project, args.device, build_result)
+	update_ci_post(context, message_id, project, args.device, build_result, gapped=args.gapped)
 
 	needs_logs_upload = NEEDS_LOGS_UPLOAD.get(returncode, False)
 	if needs_logs_upload != False:
@@ -105,16 +109,17 @@ def ci_build(update: Update, context: CallbackContext):
 	except Exception as e:
 		update_ci_post(context, message_id, project, args.device,
 					   f"{build_result}\n"
-					   f"Upload failed: {type(e)}: {e}")
+					   f"Upload failed: {type(e)}: {e}",
+					   gapped=args.gapped)
 		return
 
 	artifacts = Artifacts(device_out_dir, project.artifacts)
 
-	update_ci_post(context, message_id, project, args.device, build_result, artifacts=artifacts)
+	update_ci_post(context, message_id, project, args.device, build_result, artifacts=artifacts, gapped=args.gapped)
 
 	for artifact in artifacts.artifacts:
 		artifact.status = STATUS_UPLOADING
-		update_ci_post(context, message_id, project, args.device, build_result, artifacts=artifacts)
+		update_ci_post(context, message_id, project, args.device, build_result, artifacts=artifacts, gapped=args.gapped)
 
 		try:
 			uploader.upload(artifact, Path(project.category) / args.device / project.name / project.android_version)
@@ -123,4 +128,4 @@ def ci_build(update: Update, context: CallbackContext):
 		else:
 			artifact.status = STATUS_UPLOADED
 
-		update_ci_post(context, message_id, project, args.device, build_result, artifacts=artifacts)
+		update_ci_post(context, message_id, project, args.device, build_result, artifacts=artifacts, gapped=args.gapped)

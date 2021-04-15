@@ -40,6 +40,10 @@ while [ "${#}" -gt 0 ]; do
 			CI_CLEAN="${2}"
 			shift
 			;;
+		--gapped )
+			CI_GAPPED="${2}"
+			shift
+			;;
 		--device )
 			CI_DEVICE="${2}"
 			shift
@@ -58,6 +62,10 @@ fi
 
 cd "${CI_SOURCES}"
 . build/envsetup.sh
+
+if [ "${CI_GAPPED}" = "True" ]; then
+	export TARGET_INCLUDE_GAPPS=true
+fi
 
 lunch "${CI_LUNCH_PREFIX}_${CI_DEVICE}-${CI_LUNCH_SUFFIX}" &> lunch_log.txt
 CI_LUNCH_STATUS=$?

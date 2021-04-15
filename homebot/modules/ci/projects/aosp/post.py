@@ -1,5 +1,6 @@
 from homebot import get_config
 from homebot.modules.ci.projects.aosp.project import AOSPProject
+#from homebot.modules.ci.projects.aosp import ci_build
 from telegram.error import TimedOut
 from telegram.ext import CallbackContext
 
@@ -7,10 +8,11 @@ chat_id = get_config("CI_CHANNEL_ID")
 
 def update_ci_post(context: CallbackContext, message_id: int,
 				   project: AOSPProject, device: str,
-				   status: str, artifacts=None):
-	text =  f"🛠 CI | {project.name} {project.version} ({project.android_version})\n"
+				   status: str, artifacts=None, gapped=False):
+	text =  f"💦 CI | Fluid ({project.android_version})\n"
 	text += f"Device: {device}\n"
 	text += f"Lunch flavor: {project.lunch_prefix}_{device}-{project.lunch_suffix}\n"
+	text += f"Gapped build: {str(gapped)}\n"
 	text += "\n"
 	text += f"Status: {status}\n"
 	text += "\n"

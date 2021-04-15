@@ -1,4 +1,4 @@
-name = "ProjectFluid"
+name = "Fluid"
 category = "ROMs"
 lunch_prefix = "fluid"
 lunch_suffix = "userdebug"
